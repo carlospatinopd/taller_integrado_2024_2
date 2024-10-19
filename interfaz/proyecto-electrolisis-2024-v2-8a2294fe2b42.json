@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "proyecto-electrolisis-2024-v2",
+  "private_key_id": "8a2294fe2b42f362faf661635bd5ffd442c8a2e0",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQDSsu16g3IBjq47\nGevJ2R3UymCMmMPQBGF8FeQ/8ZpcoARHJXjNn4qEJ/TipUbBKADwdSOv0I459bcH\n1ski/ehQCEwhhCQECZNCeRpxz0lZTKc1HZAwEGyhOl4s/nXKToLHYdJonVwCKkhR\nYU5BmwcURvfmpd10lPK7H65z51FPqTijqXIekUFyUeF7CkXVtUYHtOcng01ISpxk\nMd4j9NN489BaQnmG8ZUxu81IjYVFgQZnYcRWTqi+OdCTywJkM9TlB926fXMhIAnV\ntt9j6e4YV2ZkWHOMjKGC/9ZsgVB1xOatiC911C6QwRvqhJhoyqEPhWWXlQFvB6Q7\n9A/BH6RVAgMBAAECggEAIAO7/c+XNRFe++/2Wdc5pymQ/gwARM1Fmrsg0W5+i/Bs\ndfsFngjN3ULM/NssIxFXAzJpV7+SvM/PHcvPCBgYgoCgQL95UXu6+nC4Se67MGxr\nQ7DYRdVZDC54PNH1R+YiDPWaKPcwEcwm7OaiI2nQ643VASDWw24Wa8Rml4ngWwAO\ntxe6cWwSQaFn4XaDI4oSDzHPEw/tOEGX7du26UzanRhrRCyySS4ZK/rYCLGjRvuC\nxIq5AqzSQvML9kweD/BLR9krLpOiGRHFopXsoWG7RH1qbOYjpylPuwdr9cETXHjf\nI9DOnAR4vqQPFuWwPCL/RVIz73+tnl3C9HGfAFiySQKBgQD3yNu+cujRf5upv88f\n6TyeXSMv9yvOGGPjhn4VIKa9/sEA9itU4KfHPTngb/GwP8Fd9TNXL+Xy9OkW9nlU\nGjb8nYZ88l1R8CP77Y4/jD55k+IS2pmhC0egs9bxxXxT/JLaTQ7q76pJGhyx79dA\nQrIJK3+VGysJBvVN5zv6Vc4f9wKBgQDZr0tSq6UNVwhxwfTY2ZIQkt6tp4y0gDEq\n67JTZgeYR+MbKa7O8T4s6xkWdBlW1O9GjHfO9Wn4rza8j+W/3zAGFlcWcNoISbgQ\nd+3THzs/tSGzUWEGgSRUw0DGsrc3dYn6xmGoJaDNRPQqw7GIBYSiKmy3gWlF8M11\nEogtow+jEwKBgAzEk9Ync6m/6pR/prudOBts7zA8i0xOY29I8dxC13S42Nck2CzC\nesLAe+f9vLV5Q4yE4wVeGXpAdnZRcwULaMPxlgmAL6DWP/RuVEMgBeQb461XCE2N\nGD7GpY/FvldRj3uiNt+SQ/MKXmoo0q2kAiqIzEUxpjEL474E6UlH/JwXAoGAF+e9\nMNXyqTVekweGuO2jsbg/Rfi5ZfUR8TGzAp+Yw+tZEFmSfd1WQ56JwcJ8KeH2aNvy\nKEMhIRM0wp5Wz6xV3MVFSQyZlQFrejuBXYb3fbaJfeS47/rsn3ZVvbxQjIGW5ng0\nrz96mjAxVCTrcRGSEDDygXBvvCOGnI2tcL2QcQsCgYAe0cYhN9lmXujI98m++TYD\nS/fj8r/71iIGuTa8GR0hU2QBlpxkUIIGBw9FFlarpFE3of6y9Dkn0X9e19tZgj+i\n2OZ/pb1BZ0Rqx8NEdXCXwWnofDoSiaKUHSSs93LcvJ8J9VBgQrpCd58Ff8w7bARx\njpRPoGNM14pWCtYkPijG8g==\n-----END PRIVATE KEY-----\n",
+  "client_email": "firebase-adminsdk-xklp1@proyecto-electrolisis-2024-v2.iam.gserviceaccount.com",
+  "client_id": "105101520971185315339",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-xklp1%40proyecto-electrolisis-2024-v2.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}

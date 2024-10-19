@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interacción con Firestore - Taller integrado</title>
+</head>
+<body>
+    <h1>Datos en tiempo real desde Firestore</h1>
+
+    <h2>Corriente: <span id="corriente">Cargando...</span></h2>
+    <h2>Voltaje: <span id="voltaje">Cargando...</span></h2>
+    <h2>Temperatura: <span id="temperatura">Cargando...</span></h2>
+    <h2>Presión: <span id="presion">Cargando...</span></h2>
+
+    <script>
+        const API_URL = "http://127.0.0.1:8000/data";
+
+        // Función para obtener los datos y actualizar la UI
+        async function obtenerDatos() {
+            try {
+                const response = await fetch(API_URL);
+                if (response.ok) {
+                    const data = await response.json();
+                    document.getElementById('corriente').textContent = data.corriente;
+                    document.getElementById('voltaje').textContent = data.voltaje;
+                    document.getElementById('temperatura').textContent = data.temperatura;
+                    document.getElementById('presion').textContent = data.presion;
+                } else {
+                    console.error("Error al obtener datos:", response.status);
+                }
+            } catch (error) {
+                console.error("Error en la solicitud:", error);
+            }
+        }
+
+        // Refrescar los datos cada 5 segundos
+        setInterval(obtenerDatos, 5000);
+        obtenerDatos(); // Obtener datos al cargar la página
+    </script>
+</body>
+</html>
