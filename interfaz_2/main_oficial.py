@@ -1,8 +1,9 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
-from typing import List, Optional
-#from datos import temp
+from typing import List
+import capturaDatos1  # Importamos el archivo capturaDatos.py
+from firebase_admin import firestore
+import threading
 
 app = FastAPI()
 
@@ -15,41 +16,43 @@ app.add_middleware(
     allow_headers=["*"],  # Permitir todos los headers
 )
 
-# Modelo de datos
-class Item(BaseModel):
-    id: int
-    nombre: str
-    Valor: float
-    descripcion: Optional[str] = None
-
-# Simulación de base de datos
-base_datos: List[Item] = [
-    {"id": 1, "nombre": "humedad", "Valor": 55, "descripcion": "sensor 3"},
-    {"id": 2, "nombre": "temp", "Valor": 45, "descripcion": "sensor 4"},
-    {"id": 3, "nombre": "volataje", "Valor": 55, "descripcion": "sensor 5"}
-]
-
-# Rutas de la API
-@app.get("/items/", response_model=List[Item])
+# Ruta para obtener todos los ítems desde Firebase
+@app.get("/items/", response_model=List[dict])
 def obtener_items():
-    return base_datos
+    # Obtener referencia del documento en Firestore
+    try:
+        doc_ref = capturaDatos1.db.collection("datos_test").document("datazos")
+        doc = doc_ref.get()
 
-@app.post("/items/", response_model=Item)
-def crear_item(item: Item):
-    if any(x.id == item.id for x in base_datos):
-        raise HTTPException(status_code=400, detail="El ID ya existe")
-    base_datos.append(item)
-    return item
+        if doc.exists:
+            data = doc.to_dict()
+            return data.get("historico_datos", [])
+        else:
+            raise HTTPException(status_code=404, detail="No se encontraron datos en Firebase")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error al conectarse a Firebase: {str(e)}")
 
-@app.delete("/items/{item_id}", response_model=Item)
-def eliminar_item(item_id: int):
-    item = next((x for x in base_datos if x.id == item_id), None)
-    if not item:
-        raise HTTPException(status_code=404, detail="Ítem no encontrado")
-    base_datos.remove(item)
-    return item
-
-# Nueva ruta: Obtener los últimos dos ítems
-@app.get("/items/ultimos/", response_model=List[Item])
+# Nueva ruta: Obtener los últimos dos ítems desde Firebase
+@app.get("/items/ultimos/", response_model=List[dict])
 def obtener_ultimos_items():
-    return base_datos[-2:]  # Retorna los últimos dos ítems
+    # Obtener referencia del documento en Firestore
+    try:
+        doc_ref = capturaDatos1.db.collection("datos_test").document("datazos")
+        doc = doc_ref.get()
+
+        if doc.exists:
+            data = doc.to_dict()
+            historico_datos = data.get("historico_datos", [])
+            return historico_datos[-2:]  # Retornar los últimos dos datos
+        else:
+            raise HTTPException(status_code=404, detail="No se encontraron datos en Firebase")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error al conectarse a Firebase: {str(e)}")
+
+# Iniciar la captura de datos del puerto serial y enviarlos a Firebase
+def iniciar_captura_datos():
+    capturaDatos1.read_serial_data()
+
+# Ejecutar la captura de datos en un hilo separado para que la API siga siendo accesible
+captura_datos_thread = threading.Thread(target=iniciar_captura_datos, daemon=True)
+captura_datos_thread.start()
