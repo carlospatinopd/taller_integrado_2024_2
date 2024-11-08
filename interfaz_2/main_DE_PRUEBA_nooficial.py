@@ -1,6 +1,8 @@
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.templating import Jinja2Templates
+from fastapi.responses import HTMLResponse
 from typing import List, Dict
 import capturaDatos1  
 from firebase_admin import firestore
@@ -14,6 +16,9 @@ import pandas as pd
 
 # Inicializar la aplicación FastAPI
 app = FastAPI()
+
+# Configuración de la plantilla HTML
+templates = Jinja2Templates(directory="templates")
 
 # Configuración de CORS
 app.add_middleware(
@@ -110,7 +115,8 @@ def actualizar_graficos(n):
 # Montar la app Dash en FastAPI
 app.mount("/dash", WSGIMiddleware(dash_app.server))
 
-# Ruta principal de la API
-@app.get("/")
-async def root():
-    return {"message": "Visita /dash para ver los gráficos en tiempo real"}
+
+# Ruta para la página principal de FastAPI con el HTML separado
+@app.get("/", response_class=HTMLResponse)
+async def home(request: Request):
+    return templates.TemplateResponse("index2.html", {"request": request})
