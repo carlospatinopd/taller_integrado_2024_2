@@ -144,7 +144,7 @@ dash_app.layout = html.Div([
 ])
 
 
-# Función para obtener datos de un sensor específico de Firebase ############ ESTO ARREGLAR!!!!!!!!!!!!!!!!!!!
+# Función para obtener datos de un sensor específico de Firebase 
 def obtener_datos_sensor(sensor):
     try:
         # Obtener los datos de Firebase
@@ -155,12 +155,13 @@ def obtener_datos_sensor(sensor):
             data = doc.to_dict().get("historico_datos", [])
             # Crear DataFrame para procesar los datos
             df = pd.DataFrame(data)
-            return df[["timestamp", sensor]]
+            return df[["Fecha", sensor]]
         else:
-            return pd.DataFrame(columns=["timestamp", sensor])
+            return pd.DataFrame(columns=["Fecha", sensor])
     except Exception as e:
         print(f"Error al conectarse a Firebase: {e}")
-        return pd.DataFrame(columns=["timestamp", sensor])
+        return pd.DataFrame(columns=["Fecha", sensor])
+
 
 # Crear callbacks para actualizar cada gráfico con los datos en tiempo real
 @dash_app.callback(
@@ -180,11 +181,11 @@ def actualizar_graficos(n):
     df_volumen = obtener_datos_sensor("Volumen")
 
     # Crear gráficos para cada sensor
-    fig_voltaje = px.line(df_voltaje, x="Tiempo", y="Voltaje", title="Voltaje")
-    fig_presion = px.line(df_presion, x="Tiempo", y="Presión", title="Presión")
-    fig_temperatura = px.line(df_temperatura, x="Tiempo", y="Temperatura", title="Temperatura")
-    fig_corriente = px.line(df_corriente, x="Tiempo", y="Corriente", title="Corriente")
-    fig_volumen = px.line(df_volumen, x="Tiempo", y="Volumen", title="Volumen")
+    fig_voltaje = px.line(df_voltaje, x="Fecha", y="Voltaje", title="Voltaje")
+    fig_presion = px.line(df_presion, x="Fecha", y="Presión", title="Presión")
+    fig_temperatura = px.line(df_temperatura, x="Fecha", y="Temperatura", title="Temperatura")
+    fig_corriente = px.line(df_corriente, x="Fecha", y="Corriente", title="Corriente")
+    fig_volumen = px.line(df_volumen, x="Fecha", y="Volumen", title="Volumen")
 
     return fig_voltaje, fig_presion, fig_temperatura, fig_corriente, fig_volumen
 
