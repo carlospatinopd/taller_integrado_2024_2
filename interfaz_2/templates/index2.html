@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interacción con FastAPI - Taller integrado</title>
+    <style>
+        body {
+            text-align: center;
+        }
+        button {
+            margin: 10px;
+        }
+        table {
+            margin: 20px auto;
+            border-collapse: collapse;
+            width: 80%;
+        }
+        table, th, td {
+            border: 1px solid black;
+        }
+        th, td {
+            padding: 10px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <h1>Captura de Datos de Electrolizador</h1>
+
+    <!-- Botón para obtener todos los ítems -->
+    <button onclick="toggleItems()">Ver Tabla de Datos</button>
+    <div id="resultado-get"></div>
+
+    <!-- Botones para iniciar, pausar/reanudar y detener la captura de datos -->
+    <button onclick="iniciarCaptura()">Iniciar Captura de Datos</button>
+    <button onclick="pausarReanudarCaptura()">Pausar/Reanudar Captura de Datos</button>
+    <button onclick="detenerCaptura()">Detener Captura de Datos</button>
+    <pre id="resultado-captura"></pre>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script>
+        const API_URL = "http://127.0.0.1:8000/items/";
+        const START_CAPTURE_URL = "http://127.0.0.1:8000/start_capture/";
+        const STOP_CAPTURE_URL = "http://127.0.0.1:8000/stop_capture/";
+        const PAUSE_RESUME_CAPTURE_URL = "http://127.0.0.1:8000/pause_resume_capture/";
+        const CLEAR_DATA_URL = "http://127.0.0.1:8000/clear_data/";
+
+        let itemsVisible = false;
+        let intervalId = null;
+
+        // Función para mostrar/ocultar los ítems y actualizar en tiempo real
+        async function toggleItems() {
+            if (itemsVisible) {
+                document.getElementById('resultado-get').innerHTML = "";
+                clearInterval(intervalId);
+                itemsVisible = false;
+            } else {
+                await obtenerItems();
+                intervalId = setInterval(obtenerItems, 5000); // Actualiza la tabla cada 5 segundos
+                itemsVisible = true;
+            }
+        }
+
+        // Función para obtener todos los ítems y mostrarlos en una tabla
+        async function obtenerItems() {
+            const response = await fetch(API_URL);
+            if (response.ok) {
+                const data = await response.json();
+                console.log("Datos obtenidos:", data);
+
+                // Crear tabla para mostrar los datos
+                let table = "<table><thead><tr><th>Voltaje (V)</th><th>Corriente (A)</th><th>Temperatura (°C)</th><th>Presión (atm)</th><th>Volumen (L)</th><th>Fecha</th></tr></thead><tbody>";
+                data.forEach(item => {
+                    table += `<tr>
+                                <td>${item.Voltaje.replace(' V', '')}</td>
+                                <td>${item.Corriente.replace(' A', '')}</td>
+                                <td>${item.Temperatura.replace(' °C', '')}</td>
+                                <td>${item.Presión.replace(' atm', '')}</td>
+                                <td>${item.Volumen.replace(' L', '')}</td>
+                                <td>${item.Fecha}</td>
+                              </tr>`;
+                });
+                table += "</tbody></table>";
+
+                document.getElementById('resultado-get').innerHTML = table;
+            } else {
+                console.error("Error al obtener ítems:", response.status);
+                document.getElementById('resultado-get').textContent = "Error al obtener ítems";
+            }
+        }
+
+        // Función para iniciar la captura de datos y borrar los datos existentes
+        async function iniciarCaptura() {
+            // Primero, borrar todos los datos existentes en Firebase
+            const clearResponse = await fetch(CLEAR_DATA_URL, { method: 'POST' });
+            if (clearResponse.ok) {
+                console.log("Datos existentes borrados.");
+            } else {
+                console.error("Error al borrar los datos existentes:", clearResponse.status);
+                document.getElementById('resultado-captura').textContent = "Error al borrar los datos existentes";
+                return;
+            }
+
+            // Luego, iniciar la captura de datos
+            const response = await fetch(START_CAPTURE_URL, { method: 'POST' });
+            if (response.ok) {
+                document.getElementById('resultado-captura').textContent = "Captura de datos iniciada.";
+            } else {
+                console.error("Error al iniciar captura de datos:", response.status);
+                document.getElementById('resultado-captura').textContent = "Error al iniciar captura de datos";
+            }
+        }
+
+        // Función para pausar/reanudar la captura de datos
+        async function pausarReanudarCaptura() {
+            const response = await fetch(PAUSE_RESUME_CAPTURE_URL, { method: 'POST' });
+            if (response.ok) {
+                const data = await response.json();
+                document.getElementById('resultado-captura').textContent = data.message;
+            } else {
+                console.error("Error al pausar/reanudar captura de datos:", response.status);
+                document.getElementById('resultado-captura').textContent = "Error al pausar/reanudar captura de datos";
+            }
+        }
+
+        // Función para detener la captura de datos y guardar los datos en un archivo Excel
+        async function detenerCaptura() {
+            const response = await fetch(STOP_CAPTURE_URL, { method: 'POST' });
+            if (response.ok) {
+                document.getElementById('resultado-captura').textContent = "Captura de datos detenida.";
+                guardarComoExcel();
+            } else {
+                console.error("Error al detener captura de datos:", response.status);
+                document.getElementById('resultado-captura').textContent = "Error al detener captura de datos";
+            }
+        }
+
+        // Función para guardar los datos mostrados en la tabla como un archivo Excel
+        function guardarComoExcel() {
+            const nombreArchivo = prompt("Ingrese el nombre del archivo Excel (sin extensión):");
+            if (!nombreArchivo) return;
+
+            const rows = document.querySelectorAll("table tr");
+            const wb = XLSX.utils.book_new();
+            const ws_data = [];
+
+            rows.forEach((row, index) => {
+                const cols = row.querySelectorAll("td, th");
+                const rowData = [];
+                cols.forEach(col => rowData.push(index === 0 ? col.innerText : col.innerText.replace(/[^0-9.-]/g, '')));
+                ws_data.push(rowData);
+            });
+
+            const ws = XLSX.utils.aoa_to_sheet(ws_data);
+            XLSX.utils.book_append_sheet(wb, ws, "Datos");
+            XLSX.writeFile(wb, `${nombreArchivo}.xlsx`);
+        }
+    </script>
+        <!-- Iframe para cargar el gráfico de Dash -->
+    <iframe src="/dash" width="100%" height="600" style="border:none;"></iframe>
+
+</body>
+</html>
