@@ -1,5 +1,5 @@
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request,  HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
@@ -29,6 +29,82 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Variable global para el hilo de captura de datos
+captura_datos_thread = None
+captura_datos_activa = False
+captura_datos_pausada = False
+
+# Ruta para obtener todos los ítems desde Firebase
+@app.get("/items/", response_model=List[dict])
+def obtener_items():
+    # Obtener referencia del documento en Firestore
+    try:
+        doc_ref = capturaDatos1.db.collection("datos_test").document("datazos")
+        doc = doc_ref.get()
+
+        if doc.exists:
+            data = doc.to_dict()
+            return data.get("historico_datos", [])
+        else:
+            raise HTTPException(status_code=404, detail="No se encontraron datos en Firebase")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error al conectarse a Firebase: {str(e)}")
+
+# Ruta para iniciar la captura de datos del puerto serial y enviarlos a Firebase
+@app.post("/start_capture/")
+def start_capture():
+    global captura_datos_thread, captura_datos_activa, captura_datos_pausada
+
+    if captura_datos_activa:
+        raise HTTPException(status_code=400, detail="La captura de datos ya está en curso.")
+
+    # Iniciar la captura de datos en un hilo separado
+    captura_datos_activa = True
+    captura_datos_pausada = False
+    captura_datos_thread = threading.Thread(target=capturaDatos1.read_serial_data, daemon=True)
+    captura_datos_thread.start()
+
+    return {"message": "Captura de datos iniciada."}
+
+# Ruta para detener la captura de datos
+@app.post("/stop_capture/")
+def stop_capture():
+    global captura_datos_activa
+
+    if not captura_datos_activa:
+        raise HTTPException(status_code=400, detail="No hay captura de datos en curso.")
+
+    # Detener la captura de datos
+    captura_datos_activa = False
+    capturaDatos1.stop_serial_read()  # Detener la lectura
+
+    return {"message": "Captura de datos detenida."}
+
+# Ruta para pausar/reanudar la captura de datos
+@app.post("/pause_resume_capture/")
+def pause_resume_capture():
+    global captura_datos_pausada, captura_datos_activa
+
+    if not captura_datos_activa:
+        raise HTTPException(status_code=400, detail="No hay captura de datos en curso para pausar o reanudar.")
+
+    captura_datos_pausada = not captura_datos_pausada
+    if captura_datos_pausada:
+        capturaDatos1.pause_serial_read()  # Pausar la lectura en capturaDatos.py
+        return {"message": "Captura de datos pausada."}
+    else:
+        capturaDatos1.resume_serial_read()  # Reanudar la lectura en capturaDatos.py
+        return {"message": "Captura de datos reanudada."}
+
+# Ruta para borrar todos los datos de Firebase
+@app.post("/clear_data/")
+def clear_data():
+    try:
+        doc_ref = capturaDatos1.db.collection("datos_test").document("datazos")
+        doc_ref.set({"historico_datos": []})  # Establecer el histórico de datos como una lista vacía
+        return {"message": "Todos los datos han sido borrados."}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error al borrar los datos en Firebase: {str(e)}") 
 
 # Crear la app Dash con una URL base específica
 dash_app = Dash(__name__, requests_pathname_prefix="/dash/")
@@ -42,33 +118,33 @@ dash_app.layout = html.Div([
 
     # Títulos y gráficos para cada sensor
     html.Div([
-        html.H2("Voltaje"),
+        #html.H2("Voltaje"),
         dcc.Graph(id="grafico-voltaje"),
     ], style={"margin-bottom": "20px"}),
 
     html.Div([
-        html.H2("Presión"),
+        #html.H2("Presión"),
         dcc.Graph(id="grafico-presion"),
     ], style={"margin-bottom": "20px"}),
 
     html.Div([
-        html.H2("Temperatura"),
+        #html.H2("Temperatura"),
         dcc.Graph(id="grafico-temperatura"),
     ], style={"margin-bottom": "20px"}),
 
     html.Div([
-        html.H2("Corriente"),
+        #html.H2("Corriente"),
         dcc.Graph(id="grafico-corriente"),
     ], style={"margin-bottom": "20px"}),
 
     html.Div([
-        html.H2("Volumen"),
+        #html.H2("Volumen"),
         dcc.Graph(id="grafico-volumen"),
     ], style={"margin-bottom": "20px"}),
 ])
 
 
-# Función para obtener datos de un sensor específico de Firebase
+# Función para obtener datos de un sensor específico de Firebase ############ ESTO ARREGLAR!!!!!!!!!!!!!!!!!!!
 def obtener_datos_sensor(sensor):
     try:
         # Obtener los datos de Firebase
@@ -104,11 +180,11 @@ def actualizar_graficos(n):
     df_volumen = obtener_datos_sensor("Volumen")
 
     # Crear gráficos para cada sensor
-    fig_voltaje = px.line(df_voltaje, x="timestamp", y="Voltaje", title="Voltaje en Tiempo Real")
-    fig_presion = px.line(df_presion, x="timestamp", y="Presión", title="Presión en Tiempo Real")
-    fig_temperatura = px.line(df_temperatura, x="timestamp", y="Temperatura", title="Temperatura en Tiempo Real")
-    fig_corriente = px.line(df_corriente, x="timestamp", y="Corriente", title="Corriente en Tiempo Real")
-    fig_volumen = px.line(df_volumen, x="timestamp", y="Volumen", title="Volumen en Tiempo Real")
+    fig_voltaje = px.line(df_voltaje, x="Tiempo", y="Voltaje", title="Voltaje")
+    fig_presion = px.line(df_presion, x="Tiempo", y="Presión", title="Presión")
+    fig_temperatura = px.line(df_temperatura, x="Tiempo", y="Temperatura", title="Temperatura")
+    fig_corriente = px.line(df_corriente, x="Tiempo", y="Corriente", title="Corriente")
+    fig_volumen = px.line(df_volumen, x="Tiempo", y="Volumen", title="Volumen")
 
     return fig_voltaje, fig_presion, fig_temperatura, fig_corriente, fig_volumen
 
