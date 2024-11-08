@@ -42,27 +42,27 @@ dash_app.layout = html.Div([
 
     # Títulos y gráficos para cada sensor
     html.Div([
-        html.H2("Voltaje en Tiempo Real"),
+        html.H2("Voltaje"),
         dcc.Graph(id="grafico-voltaje"),
     ], style={"margin-bottom": "20px"}),
 
     html.Div([
-        html.H2("Presión en Tiempo Real"),
+        html.H2("Presión"),
         dcc.Graph(id="grafico-presion"),
     ], style={"margin-bottom": "20px"}),
 
     html.Div([
-        html.H2("Temperatura en Tiempo Real"),
+        html.H2("Temperatura"),
         dcc.Graph(id="grafico-temperatura"),
     ], style={"margin-bottom": "20px"}),
 
     html.Div([
-        html.H2("Corriente en Tiempo Real"),
+        html.H2("Corriente"),
         dcc.Graph(id="grafico-corriente"),
     ], style={"margin-bottom": "20px"}),
 
     html.Div([
-        html.H2("Volumen en Tiempo Real"),
+        html.H2("Volumen"),
         dcc.Graph(id="grafico-volumen"),
     ], style={"margin-bottom": "20px"}),
 ])
